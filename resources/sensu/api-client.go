@@ -2,6 +2,7 @@ package sensu
 
 import (
   "fmt"
+  "log"
   "encoding/json"
 
   "github.com/parnurzeal/gorequest"
