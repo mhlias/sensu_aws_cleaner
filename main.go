@@ -3,9 +3,11 @@ package main
 
 import (
   "flag"
+  "fmt"
 
   "github.com/mhlias/sensu_aws_cleaner/resources/aws"
   "github.com/mhlias/sensu_aws_cleaner/resources/sensu"
+  "github.com/mhlias/sensu_aws_cleaner/resources/chef"
 
 
 )
@@ -18,6 +20,8 @@ func main() {
   hostPtr := flag.String("host", "localhost", "Sensu API host address")
   portPtr := flag.Int("port", 4567, "Sensu API port")
   regionPtr := flag.String("region", "", "AWS Region to look for the instances in")
+  removeChefPtr := flag.Bool("remove-chef", false, "Set to remove instance from managed chef too.")
+  
   
 
   
@@ -47,6 +51,13 @@ func main() {
       if (!ec2.CheckInstanceState(awsclient, event.Client.Address)) {
         if sensu.CheckRemoveClient(event.Client.Name) {
           aws.RemoveRecords(awsclient, event.Client.Address)
+          if *removeChefPtr {
+            chef := &chef.Chef{}
+            chef_node := chef.Find_instance(event.Client.Address)
+            if len(chef_node) > 0 {
+              chef.Remove_instance(chef_node)
+            }
+          }
         }
       }
     }
